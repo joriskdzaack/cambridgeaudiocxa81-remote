@@ -1,0 +1,9 @@
+substitutions:
+  devicename: cambridgeaudiocxa81
+  upper_devicename: Cambridge Audio CXA81
+  wifi_ap_password: Idealize|Harddisk4|Duo
+  timezone: Europe/Berlin
+  ntp_server: "10.10.0.33"
+  area: Living Room
+  mqtt_broker: "10.10.2.1"
+  mqtt_port: "1883"

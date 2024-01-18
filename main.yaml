@@ -1,0 +1,111 @@
+esphome:
+  name: ${devicename}
+  comment: Remote control for Cambridge Audio CXA81
+  area: ${area}
+  name_add_mac_suffix: true
+  project:
+    name: joriskdzaack.cambridgeaudiocxa81-remote
+    version: "0.1"
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+
+logger:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: ${timezone}
+    servers:
+     - ${ntp_server}
+
+ota:
+  password: b714eaf8d9a557765569720c64f2effb
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: ${upper_devicename}
+    password: ${wifi_ap_password}
+
+captive_portal:
+
+web_server:
+  port: 80
+
+mqtt:
+  broker: ${mqtt_broker}
+  port: ${mqtt_port}
+  username: !secret cambridgeaudiocxa81_mqtt_user
+  password: !secret cambridgeaudiocxa81_mqtt_password
+
+text_sensor:
+  - platform: version
+    name: ${upper_devicename} ESPHome Version
+  - platform: wifi_info
+    ip_address:
+      name: ${upper_devicename} IP
+    ssid:
+      name: ${upper_devicename} SSID
+    bssid:
+      name: ${upper_devicename} BSSID
+
+sensor:
+  - platform: uptime
+    name: ${upper_devicename} Uptime
+  - platform: wifi_signal
+    name: ${upper_devicename} WiFi Signal
+    update_interval: 60s
+
+select:
+  - platform: template
+    name: Source Selection
+    id: cambridgeaudiocxa81_source
+    optimistic: true
+    options:
+      - A1
+      - A2
+      - A3
+      - A4
+      - D1
+      - D2
+      - D3
+      - Bluetooth
+      - USB Audio
+      - A1 Balanced
+    set_action:
+      then:
+      - lambda: |-
+          if (x == "A1") {
+            ESP_LOGD("lambda", "Sent A1");
+          }
+          else if (x == "A2") {
+            ESP_LOGD("lambda", "Sent A2");
+          }
+          else if (x == "A3") {
+            ESP_LOGD("lambda", "Sent A3");
+          }
+          else if (x == "A4") {
+            ESP_LOGD("lambda", "Sent A4");
+          }
+          else if (x == "D1") {
+            ESP_LOGD("lambda", "Sent D1");
+          }
+          else if (x == "D2") {
+            ESP_LOGD("lambda", "Sent D2");
+          }
+          else if (x == "D3") {
+            ESP_LOGD("lambda", "Sent D3");
+          }
+          else if (x == "Bluetooth") {
+            ESP_LOGD("lambda", "Sent Bluetooth");
+          }
+          else if (x == "USB Audio") {
+            ESP_LOGD("lambda", "Sent USB Audio");
+          }
+          else if (x == "A1 Balanced") {
+            ESP_LOGD("lambda", "Sent A1 Balanced");
+          }
