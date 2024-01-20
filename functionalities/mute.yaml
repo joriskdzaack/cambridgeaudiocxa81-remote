@@ -14,6 +14,9 @@ switch:
       } else if(id(cambridgeaudiocxa81_state).state == "#02,03,0") {
         return false;
       }
+      else {
+        return {};
+      }
     turn_on_action:
       then:
         - logger.log:

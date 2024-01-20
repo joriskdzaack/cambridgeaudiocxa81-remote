@@ -1,5 +1,5 @@
 packages:
-  substitutions: !include substitutions.yaml
+  substitutions: !include config.yaml
   base: !include common/base.yaml
   power: !include functionalities/power.yaml
   mute: !include functionalities/mute.yaml

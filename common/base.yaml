@@ -8,7 +8,7 @@ esphome:
     name: joriskdzaack.cambridgeaudiocxa81-remote
     version: "0.1"
   includes:
-    - cambridgeaudiocxa81/uart_read_line_sensor.h
+    - cambridgeaudiocxa81/include/uart_read_line_sensor.h
 
 esp32:
   board: wemos_d1_mini32
