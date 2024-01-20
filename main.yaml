@@ -1,16 +1,25 @@
 esphome:
   name: ${devicename}
+  friendly_name: ${upper_devicename}
   comment: Remote control for Cambridge Audio CXA81
   area: ${area}
   name_add_mac_suffix: true
   project:
     name: joriskdzaack.cambridgeaudiocxa81-remote
     version: "0.1"
+  includes:
+    - cambridgeaudiocxa81/uart_read_line_sensor.h
 
 esp32:
   board: wemos_d1_mini32
   framework:
     type: arduino
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO5
+  rx_pin: GPIO4
+  baud_rate: 9600
 
 logger:
 
@@ -42,6 +51,19 @@ mqtt:
   username: !secret cambridgeaudiocxa81_mqtt_user
   password: !secret cambridgeaudiocxa81_mqtt_password
 
+interval:
+  - interval: 10s
+    then:
+      - logger.log:
+          format: "Send #1,01\r"
+      - uart.write: "\r#1,01\r"
+      - logger.log:
+          format: "Send #1,03\r"
+      - uart.write: "\r#1,03\r"
+      - logger.log:
+          format: "Send #3,01\r"
+      - uart.write: "\r#3,01\r"
+
 text_sensor:
   - platform: version
     name: ${upper_devicename} ESPHome Version
@@ -52,6 +74,14 @@ text_sensor:
       name: ${upper_devicename} SSID
     bssid:
       name: ${upper_devicename} BSSID
+  - platform: custom
+    lambda: |-
+      auto state_sensor = new UartReadLineSensor(id(uart_bus));
+      App.register_component(state_sensor);
+      return {state_sensor};
+    text_sensors:
+      id: cambridgeaudiocxa81_state
+      name: ${upper_devicename} State
 
 sensor:
   - platform: uptime
@@ -60,10 +90,53 @@ sensor:
     name: ${upper_devicename} WiFi Signal
     update_interval: 60s
 
+switch:
+  - platform: template
+    id: cambridgeaudiocxa81_power
+    name: Amplifier Power
+    icon: mdi:amplifier
+    lambda: |-
+      if (id(cambridgeaudiocxa81_state).state == "#02,01,1") {
+        return true;
+      } else if(id(cambridgeaudiocxa81_state).state == "#02,01,0") {
+        return false;
+      }
+    turn_on_action:
+      then:
+        - logger.log:
+            format: "Send #1,02,1\r"
+        - uart.write: "\r#1,02,1\r"
+    turn_off_action:
+      then:
+        - logger.log:
+            format: "Send #1,02,0\r"
+        - uart.write: "\r#1,02,0\r"
+  - platform: template
+    id: cambridgeaudiocxa81_mute
+    name: Amplifier Mute
+    icon: mdi:volume-mute
+    lambda: |-
+      if (id(cambridgeaudiocxa81_state).state == "#02,03,1") {
+        return true;
+      } else if(id(cambridgeaudiocxa81_state).state == "#02,03,0") {
+        return false;
+      }
+    turn_on_action:
+      then:
+        - logger.log:
+            format: "Send #1,04,1\r"
+        - uart.write: "\r#1,04,1\r"
+    turn_off_action:
+      then:
+        - logger.log:
+            format: "Send #1,04,0\r"
+        - uart.write: "\r#1,04,0\r"
+
 select:
   - platform: template
     name: Source Selection
     id: cambridgeaudiocxa81_source
+    icon: mdi:audio-input-rca
     optimistic: true
     options:
       - A1
@@ -78,34 +151,42 @@ select:
       - A1 Balanced
     set_action:
       then:
-      - lambda: |-
+      - uart.write: !lambda
+          char buf[128];
+          
           if (x == "A1") {
-            ESP_LOGD("lambda", "Sent A1");
+            sprintf(buf, "\r#3,04,00\r");
           }
           else if (x == "A2") {
-            ESP_LOGD("lambda", "Sent A2");
+            sprintf(buf, "\r#3,04,01\r");
           }
           else if (x == "A3") {
-            ESP_LOGD("lambda", "Sent A3");
+            sprintf(buf, "\r#3,04,02\r");
           }
           else if (x == "A4") {
-            ESP_LOGD("lambda", "Sent A4");
+            sprintf(buf, "\r#3,04,03\r");
           }
           else if (x == "D1") {
-            ESP_LOGD("lambda", "Sent D1");
+            sprintf(buf, "\r#3,04,04\r");
           }
           else if (x == "D2") {
-            ESP_LOGD("lambda", "Sent D2");
+            sprintf(buf, "\r#3,04,05\r");
           }
           else if (x == "D3") {
-            ESP_LOGD("lambda", "Sent D3");
+            sprintf(buf, "\r#3,04,06\r");
           }
           else if (x == "Bluetooth") {
-            ESP_LOGD("lambda", "Sent Bluetooth");
+            sprintf(buf, "\r#3,04,14\r");
           }
           else if (x == "USB Audio") {
-            ESP_LOGD("lambda", "Sent USB Audio");
+            sprintf(buf, "\r#3,04,16\r");
           }
           else if (x == "A1 Balanced") {
-            ESP_LOGD("lambda", "Sent A1 Balanced");
+            sprintf(buf, "\r#3,04,20\r");
           }
+          
+          std::string s = buf;
+          
+          ESP_LOGD("lambda", "Sent %s", s.c_str());
+          
+          return std::vector<unsigned char>( s.begin(), s.end() );
