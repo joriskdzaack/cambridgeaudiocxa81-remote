@@ -1,0 +1,78 @@
+esphome:
+  name: ${devicename}
+  friendly_name: ${upper_devicename}
+  comment: Remote control for Cambridge Audio CXA81
+  area: ${area}
+  name_add_mac_suffix: true
+  project:
+    name: joriskdzaack.cambridgeaudiocxa81-remote
+    version: "0.1"
+  includes:
+    - cambridgeaudiocxa81/uart_read_line_sensor.h
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+logger:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: ${timezone}
+    servers:
+     - ${ntp_server}
+
+ota:
+  password: b714eaf8d9a557765569720c64f2effb
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: ${upper_devicename}
+    password: ${wifi_ap_password}
+
+captive_portal:
+
+web_server:
+  port: 80
+
+mqtt:
+  broker: ${mqtt_broker}
+  port: ${mqtt_port}
+  username: !secret cambridgeaudiocxa81_mqtt_user
+  password: !secret cambridgeaudiocxa81_mqtt_password
+
+text_sensor:
+  - platform: version
+    name: ESPHome Version
+  - platform: wifi_info
+    ip_address:
+      name: IP
+    ssid:
+      name: SSID
+    bssid:
+      name: BSSID
+  - platform: custom
+    lambda: |-
+      auto state_sensor = new UartReadLineSensor(id(uart_bus));
+      App.register_component(state_sensor);
+      return {state_sensor};
+    text_sensors:
+      id: cambridgeaudiocxa81_state
+      name: State
+
+sensor:
+  - platform: uptime
+    name: ${upper_devicename} Uptime
+  - platform: wifi_signal
+    name: ${upper_devicename} WiFi Signal
+    update_interval: 60s

@@ -1,0 +1,66 @@
+interval:
+  - interval: 10s
+    then:
+      - uart.write: "\r#3,01\r"
+
+select:
+  - platform: template
+    name: Source Selection
+    id: cambridgeaudiocxa81_source
+    icon: mdi:audio-input-rca
+    optimistic: true
+    options:
+      - A1
+      - A2
+      - A3
+      - A4
+      - D1
+      - D2
+      - D3
+      - Bluetooth
+      - USB Audio
+      - A1 Balanced
+    set_action:
+      then:
+      - uart.write: !lambda
+          char buf[128];
+          
+          if (x == "A1") {
+            sprintf(buf, "\r#3,04,00\r");
+          }
+          else if (x == "A2") {
+            sprintf(buf, "\r#3,04,01\r");
+          }
+          else if (x == "A3") {
+            sprintf(buf, "\r#3,04,02\r");
+          }
+          else if (x == "A4") {
+            sprintf(buf, "\r#3,04,03\r");
+          }
+          else if (x == "D1") {
+            sprintf(buf, "\r#3,04,04\r");
+          }
+          else if (x == "D2") {
+            sprintf(buf, "\r#3,04,05\r");
+          }
+          else if (x == "D3") {
+            sprintf(buf, "\r#3,04,06\r");
+          }
+          else if (x == "Bluetooth") {
+            sprintf(buf, "\r#3,04,14\r");
+          }
+          else if (x == "USB Audio") {
+            sprintf(buf, "\r#3,04,16\r");
+          }
+          else if (x == "A1 Balanced") {
+            sprintf(buf, "\r#3,04,20\r");
+          }
+          else {
+            sprintf(buf, "\r");
+          }
+          
+          std::string s = buf;
+          
+          ESP_LOGD("lambda", "Sent %s", s.c_str());
+          
+          return std::vector<unsigned char>( s.begin(), s.end() );

@@ -1,2 +1,6 @@
-<<: !include configuration.yaml
-<<: !include main.yaml
+packages:
+  substitutions: !include substitutions.yaml
+  base: !include common/base.yaml
+  power: !include functionalities/power.yaml
+  mute: !include functionalities/mute.yaml
+  source: !include functionalities/source.yaml

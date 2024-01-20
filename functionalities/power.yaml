@@ -1,0 +1,26 @@
+interval:
+  - interval: 10s
+    then:
+      - uart.write: "\r#1,01\r"
+
+switch:
+  - platform: template
+    id: cambridgeaudiocxa81_power
+    name: Amplifier Power
+    icon: mdi:amplifier
+    lambda: |-
+      if (id(cambridgeaudiocxa81_state).state == "#02,01,1") {
+        return true;
+      } else if(id(cambridgeaudiocxa81_state).state == "#02,01,0") {
+        return false;
+      }
+    turn_on_action:
+      then:
+        - logger.log:
+            format: "Send #1,02,1\r"
+        - uart.write: "\r#1,02,1\r"
+    turn_off_action:
+      then:
+        - logger.log:
+            format: "Send #1,02,0\r"
+        - uart.write: "\r#1,02,0\r"
