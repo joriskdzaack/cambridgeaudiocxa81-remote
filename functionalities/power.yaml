@@ -1,7 +1,7 @@
 interval:
   - interval: 10s
     then:
-      - uart.write: "\r#1,01\r"
+      - uart.write: "\r#1,01,00\r"
 
 switch:
   - platform: template

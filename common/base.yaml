@@ -15,13 +15,14 @@ esp32:
   framework:
     type: arduino
 
+logger:
+  level: VERY_VERBOSE
+
 uart:
   id: uart_bus
   tx_pin: GPIO17
   rx_pin: GPIO16
   baud_rate: 9600
-
-logger:
 
 time:
   - platform: sntp
@@ -39,6 +40,11 @@ wifi:
   ap:
     ssid: ${upper_devicename}
     password: ${wifi_ap_password}
+  manual_ip:
+    static_ip: ${static_ip}
+    gateway: ${gateway}
+    subnet: ${subnet}
+    dns1: ${dns}
 
 captive_portal:
 
@@ -76,3 +82,7 @@ sensor:
   - platform: wifi_signal
     name: ${upper_devicename} WiFi Signal
     update_interval: 60s
+
+switch:
+  - platform: restart
+    name: "Doorbell Restart"
